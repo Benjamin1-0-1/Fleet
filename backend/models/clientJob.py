@@ -1,11 +1,9 @@
-from extensions import db
 from datetime import datetime
+from extensions import db
 
 class ClientJob(db.Model):
-    __tablename__ = 'client_jobs'
     id = db.Column(db.Integer, primary_key=True)
-    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
-    vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'))
+    client_id  = db.Column(db.Integer, db.ForeignKey('client.id'))
+    vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicle.id'))
     date = db.Column(db.DateTime, default=datetime.utcnow)
-    details = db.Column(db.Text)
-    amount = db.Column(db.Float, nullable=False)
+    amount = db.Column(db.Float)

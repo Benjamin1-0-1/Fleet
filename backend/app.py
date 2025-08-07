@@ -1,22 +1,34 @@
+# backend/app.py
+
 from flask import Flask
-from extensions import db, jwt, migrate
-from routes.vehicles import vehicles_bp
-from routes.clients import clients_bp
-from routes.reminders import reminders_bp
-from routes.analytics import analytics_bp
+from flask_restx import Api
+from config import Config
+from extensions import db
+from backend.routes.vehicle_routes import fleets_ns
+from backend.routes.client_routes import clients_ns
+from backend.routes.reminder_routes import reminders_ns
+from backend.routes.analytics_routes import analytics_ns
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object('config.Config')
+    app.config.from_object(Config)
     db.init_app(app)
-    jwt.init_app(app)
-    migrate.init_app(app, db)
-    app.register_blueprint(vehicles_bp, url_prefix='/api/vehicles')
-    app.register_blueprint(clients_bp, url_prefix='/api/clients')
-    app.register_blueprint(reminders_bp, url_prefix='/api/reminders')
-    app.register_blueprint(analytics_bp, url_prefix='/api/analytics')
+
+    api = Api(
+        app,
+        version="1.0",
+        title="MyFleet Performance API",
+        description="Vehicle, Client, Reminder & Analytics endpoints",
+        doc="/docs"
+    )
+
+    api.add_namespace(fleets_ns)
+    api.add_namespace(clients_ns)
+    api.add_namespace(reminders_ns)
+    api.add_namespace(analytics_ns)
+
     return app
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = create_app()
     app.run(debug=True)

@@ -1,7 +1,6 @@
+"""Holds singletons so they can be imported anywhere without circular issues."""
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_jwt_extended import JWTManager
+from flask_marshmallow import Marshmallow
 
-db = SQLAlchemy()
-migrate = Migrate()
-jwt = JWTManager()
+db = SQLAlchemy()      # ORM
+ma = Marshmallow()     # JSON (de)serialisation
