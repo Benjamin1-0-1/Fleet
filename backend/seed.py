@@ -5,12 +5,12 @@ Quick‐and‐dirty data seeder for the Vehicle-Management API.
 """
 
 from app import create_app
-from app.extensions import db
-from app.models.vehicle import Vehicle
-from app.models.client import Client
-from app.models.vehicle_cost import VehicleCost
-from app.models.client_rating import ClientRating
-from app.models.reminder import Reminder
+from extensions import db
+from models.vehicle import Vehicle
+from models.client import Client
+from models.vehicleCost import VehicleCost
+from models.clientRating import ClientRating
+from models.reminder import Reminder
 
 def run():
     app = create_app()
