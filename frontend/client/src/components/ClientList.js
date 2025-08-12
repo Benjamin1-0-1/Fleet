@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/api";
-import "../styles/client-list.css";
 
 export default function ClientList() {
   const [items, setItems] = useState([]);
@@ -19,7 +18,10 @@ export default function ClientList() {
 
   return (
     <section className="page">
-      <header className="page__header"><h2>Clients</h2><Link className="btn" to="new">+ Add Client</Link></header>
+      <header className="page__header">
+        <h2>Clients</h2>
+        <Link className="btn" to="new">+ Add Client</Link>
+      </header>
       <ul className="cards">
         {items.map((c) => (
           <li key={c.id} className="card">

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../api/api";
-import "../styles/client-form.css";
 
 const empty = { first_name: "", last_name: "", email: "", phone: "", address: "" };
 
@@ -12,6 +11,7 @@ export default function ClientForm() {
   const navigate = useNavigate();
 
   useEffect(() => { if (editing) api.get(`/clients/${id}`).then((r) => setForm(r.data)); }, [id]);
+
   const update = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const submit = async (e) => {

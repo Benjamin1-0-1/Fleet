@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
-import "../styles/reminder-form.css";
 
 export default function ReminderForm({ onSaved }) {
   const [vehicles, setVehicles] = useState([]);
   const [form, setForm] = useState({ vehicle_id: "", reminder_type: "service", due_date: "" });
 
   useEffect(() => { api.get("/vehicles").then((r) => setVehicles(r.data)); }, []);
-
   const update = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const submit = async (e) => {

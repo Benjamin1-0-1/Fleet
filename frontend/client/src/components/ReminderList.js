@@ -1,19 +1,16 @@
 import api from "../api/api";
-import "../styles/reminder-list.css";
 
 export default function ReminderList({ items, onChanged }) {
   const markSent = async (id) => {
     await api.patch(`/reminders/${id}`, { sent: true });
     onChanged?.();
   };
-
   const remove = async (id) => {
     if (window.confirm("Delete reminder?")) {
       await api.delete(`/reminders/${id}`);
       onChanged?.();
     }
   };
-
   return (
     <ul className="cards">
       {items.map((r) => (

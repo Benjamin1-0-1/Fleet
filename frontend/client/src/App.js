@@ -3,7 +3,6 @@ import Dashboard from "./pages/Dashboard";
 import VehiclesPage from "./pages/VehiclesPage";
 import ClientsPage from "./pages/ClientsPage";
 import RemindersPage from "./pages/RemindersPage";
-import "./styles/dashboard.css";
 
 export default function App() {
   return (

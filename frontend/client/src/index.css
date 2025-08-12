@@ -1,13 +1,30 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* Business theme */
+:root {
+  --brand: #1e40af; /* blue-800 */
+  --brand-light: #3b82f6;
+  --bg: #f8fafc;    /* slate-50 */
+  --text: #0f172a;  /* slate-900 */
+  font-family: Inter, system-ui, sans-serif;
 }
+body { @apply bg-[color:var(--bg)] text-[color:var(--text)]; }
+.btn { @apply bg-[color:var(--brand)] text-white px-4 py-2 rounded hover:bg-[color:var(--brand-light)] transition; }
+.danger { @apply bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded; }
+.page { @apply max-w-6xl mx-auto p-6; }
+.page__header { @apply flex items-center justify-between mb-6; }
+.cards { @apply grid gap-4 md:grid-cols-2; }
+.card { @apply bg-white shadow rounded p-4 flex items-center justify-between; }
+.card .sub { @apply text-sm text-slate-500; }
+.form { @apply bg-white shadow rounded p-6 max-w-xl; }
+.form__field { @apply flex flex-col mb-4; }
+.form__field input, .form__field select { @apply border border-slate-300 rounded px-3 py-2 mt-1; }
+.form__actions { @apply flex gap-3 justify-end; }
+.navbar { @apply bg-[color:var(--brand)] text-white flex items-center justify-between px-6 py-3 shadow; }
+.navbar__links a { @apply ml-6 hover:text-[color:var(--brand-light)] transition; }
+.stats { @apply grid grid-cols-1 sm:grid-cols-2 gap-4; }
+.stat { @apply bg-white shadow rounded p-6 text-center; }
+.stat__num { @apply text-3xl font-bold; }
+.stat__label { @apply text-slate-600 mt-1; }

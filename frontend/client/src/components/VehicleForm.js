@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../api/api";
-import "../styles/vehicle-form.css";
 
 const empty = { plate: "", make: "", model: "", v_class: "" };
 
@@ -26,14 +25,14 @@ export default function VehicleForm() {
     <form onSubmit={submit} className="form">
       <h2>{editing ? "Edit Vehicle" : "Add Vehicle"}</h2>
       {[
-        ["plate", "Plate"],
-        ["make", "Make"],
-        ["model", "Model"],
-        ["v_class", "Class"],
-      ].map(([name, label]) => (
+        ["plate","Plate"],
+        ["make","Make"],
+        ["model","Model"],
+        ["v_class","Class"]
+      ].map(([name,label]) => (
         <label key={name} className="form__field">
           <span>{label}</span>
-          <input name={name} value={form[name] || ""} onChange={update} required={name!=="colour"} />
+          <input name={name} value={form[name] || ""} onChange={update} required />
         </label>
       ))}
       <div className="form__actions">

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
-import "../styles/dashboard.css";
 
 export default function Dashboard() {
   const [summary, setSummary] = useState({ vehicles: 0, total_costs: 0 });
@@ -18,7 +17,7 @@ export default function Dashboard() {
           <div className="stat__label">Vehicles</div>
         </div>
         <div className="stat">
-          <div className="stat__num">${summary.total_costs?.toFixed?.(2) || 0}</div>
+          <div className="stat__num">${Number(summary.total_costs || 0).toFixed(2)}</div>
           <div className="stat__label">Total Costs</div>
         </div>
       </div>
