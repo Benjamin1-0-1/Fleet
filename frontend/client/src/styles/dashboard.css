@@ -1,0 +1,6 @@
+.navbar { @apply bg-[color:var(--brand)] text-white flex items-center justify-between px-6 py-3 shadow; }
+.navbar__links a { @apply ml-6 hover:text-[color:var(--brand-light)] transition; }
+.stats { @apply grid grid-cols-1 sm:grid-cols-2 gap-4; }
+.stat { @apply bg-white shadow rounded p-6 text-center; }
+.stat__num { @apply text-3xl font-bold; }
+.stat__label { @apply text-slate-600 mt-1; }

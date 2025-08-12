@@ -1,71 +1,36 @@
-"""
-Quick‐and‐dirty data seeder for the Vehicle-Management API.
-• Creates the tables (SQLite by default) and inserts a few demo rows.
-• Safe to re-run: it **drops everything first** – DO NOT use in production DBs.
-"""
-
+from datetime import date
 from app import create_app
-from extensions import db
-from models.vehicle import Vehicle
-from models.client import Client
-from models.vehicleCost import VehicleCost
-from models.clientRating import ClientRating
-from models.reminder import Reminder
+from app.extensions import db
+from app.models.vehicle import Vehicle
+from app.models.client import Client
+from app.models.vehicle_cost import VehicleCost
+from app.models.client_rating import ClientRating
+from app.models.reminder import Reminder
 
-def run():
-    app = create_app()
-    with app.app_context():
-        db.drop_all()
-        db.create_all()
+app = create_app()
 
-        # --- demo data -----------------------------------------------------
-        car1 = Vehicle(
-            plate="KAB-123A",
-            make="Toyota",
-            model="Corolla",
-            colour="White",
-            v_class="sedan",
-            purchase_price=8000,
-        )
-        car2 = Vehicle(
-            plate="KCD-456B",
-            make="Nissan",
-            model="Navara",
-            colour="Silver",
-            v_class="truck",
-            purchase_price=15000,
-        )
+with app.app_context():
+    db.drop_all()
+    db.create_all()
 
-        alice = Client(
-            first_name="Alice",
-            last_name="Nduta",
-            phone="+254712123123",
-            email="alice@example.com",
-            address="Nairobi",
-        )
-        bob = Client(
-            first_name="Bob",
-            last_name="Mutua",
-            phone="+254722456456",
-            email="bob@example.com",
-            address="Mombasa",
-        )
+    v1 = Vehicle(plate="KAB-123A", make="Toyota", model="Corolla", colour="White", v_class="sedan", purchase_price=8000)
+    v2 = Vehicle(plate="KCD-456B", make="Nissan", model="Navara", colour="Silver", v_class="truck", purchase_price=15000)
 
-        cost1 = VehicleCost(vehicle=car1, cost_type="fuel", amount=85)
-        cost2 = VehicleCost(vehicle=car2, cost_type="repair", amount=230)
+    c1 = Client(first_name="Alice", last_name="Nduta", email="alice@example.com", phone="0712123123", address="Nairobi")
+    c2 = Client(first_name="Bob", last_name="Mutua", email="bob@example.com", phone="0722456456", address="Mombasa")
 
-        rating1 = ClientRating(client=alice, stars=5, feedback="Prompt payer")
-        rating2 = ClientRating(client=bob, stars=3, feedback="Late return once")
+    db.session.add_all([v1, v2, c1, c2])
+    db.session.flush()  # <-- ensures v1.id / v2.id / c1.id exist without committing
 
-        reminder1 = Reminder(vehicle=car1, reminder_type="service", due_date="2025-09-01")
+    cost1 = VehicleCost(vehicle_id=v1.id, cost_type="fuel", amount=85)
+    cost2 = VehicleCost(vehicle_id=v2.id, cost_type="repair", amount=230)
 
-        db.session.add_all(
-            [car1, car2, alice, bob, cost1, cost2, rating1, rating2, reminder1]
-        )
-        db.session.commit()
-        # -------------------------------------------------------------------
+    r1 = ClientRating(client_id=c1.id, stars=5, feedback="Prompt payer")
+    r2 = ClientRating(client_id=c2.id, stars=3, feedback="Late return once")
 
-        print("🌱  Seed complete – demo data inserted.")
+    rem1 = Reminder(vehicle_id=v1.id, reminder_type="service", due_date=date(2025, 9, 1))
 
-if __name__ == "__main__":
-    run()
+    db.session.add_all([cost1, cost2, r1, r2, rem1])
+    db.session.commit()
+
+    print("🌱 Seeded!")

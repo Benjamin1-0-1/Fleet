@@ -1,51 +1,30 @@
-import logo from './logo.svg';
-import './App.css';
-import React from "react";
-import { NavLink, Routes, Route, Navigate } from "react-router-dom";
-import FleetsPage from "./pages/FleetsPage";
+import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
+import VehiclesPage from "./pages/VehiclesPage";
 import ClientsPage from "./pages/ClientsPage";
 import RemindersPage from "./pages/RemindersPage";
-import AnalyticsPage from "./pages/AnalyticsPage";
-
-
-const Nav = () => (
-  <nav className="bg-white shadow mb-6">
-    <div className="max-w-6xl mx-auto px-4 py-3 flex gap-4">
-      {[
-        ["Fleets", "/fleets"],
-        ["Clients", "/clients"],
-        ["Reminders", "/reminders"],
-        ["Analytics", "/analytics"]
-      ].map(([label, to]) => (
-        <NavLink
-          key={to}
-          to={to}
-          className={({ isActive }) =>
-            `px-3 py-1 rounded ${isActive ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-100"}`
-          }
-        >
-          {label}
-        </NavLink>
-      ))}
-    </div>
-  </nav>
-);
-
+import "./styles/dashboard.css";
 
 export default function App() {
   return (
-    <div>
-      <Nav />
-      <main className="max-w-6xl mx-auto px-4">
-        <Routes>
-          <Route path="/" element={<Navigate to="/fleets" replace />} />
-          <Route path="/fleets" element={<FleetsPage />} />
-          <Route path="/clients" element={<ClientsPage />} />
-          <Route path="/reminders" element={<RemindersPage />} />
-          <Route path="/analytics" element={<AnalyticsPage />} />
-        </Routes>
-      </main>
-    </div>
+    <BrowserRouter>
+      <nav className="navbar">
+        <h1 className="navbar__brand">Fleet Pro</h1>
+        <div className="navbar__links">
+          <Link to="/">Dashboard</Link>
+          <Link to="/vehicles">Vehicles</Link>
+          <Link to="/clients">Clients</Link>
+          <Link to="/reminders">Reminders</Link>
+        </div>
+      </nav>
+
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/vehicles/*" element={<VehiclesPage />} />
+        <Route path="/clients/*" element={<ClientsPage />} />
+        <Route path="/reminders/*" element={<RemindersPage />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
-
