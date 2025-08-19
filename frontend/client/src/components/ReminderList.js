@@ -2,15 +2,26 @@ import api from "../api/api";
 
 export default function ReminderList({ items, onChanged }) {
   const markSent = async (id) => {
-    await api.patch(`/reminders/${id}`, { sent: true });
-    onChanged?.();
-  };
-  const remove = async (id) => {
-    if (window.confirm("Delete reminder?")) {
-      await api.delete(`/reminders/${id}`);
+    try {
+      await api.patch(`/reminders/${id}`, { sent: true });
       onChanged?.();
+    } catch (err) {
+      console.error("[ReminderList] markSent failed:", err);
+      alert("Failed to mark as sent.");
     }
   };
+
+  const remove = async (id) => {
+    if (!window.confirm("Delete reminder?")) return;
+    try {
+      await api.delete(`/reminders/${id}`);
+      onChanged?.();
+    } catch (err) {
+      console.error("[ReminderList] delete failed:", err);
+      alert("Failed to delete reminder.");
+    }
+  };
+
   return (
     <ul className="cards">
       {items.map((r) => (

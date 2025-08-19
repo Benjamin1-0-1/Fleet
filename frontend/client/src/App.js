@@ -3,6 +3,7 @@ import Dashboard from "./pages/Dashboard";
 import VehiclesPage from "./pages/VehiclesPage";
 import ClientsPage from "./pages/ClientsPage";
 import RemindersPage from "./pages/RemindersPage";
+import ThemeToggle from "./components/ThemeToggle";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
           <Link to="/vehicles">Vehicles</Link>
           <Link to="/clients">Clients</Link>
           <Link to="/reminders">Reminders</Link>
+          <ThemeToggle />
         </div>
       </nav>
 

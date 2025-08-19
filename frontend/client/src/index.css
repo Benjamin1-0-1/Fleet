@@ -4,10 +4,12 @@
 
 /* Business theme */
 :root {
-  --brand: #1e40af; /* blue-800 */
+  --brand: #1e40af;
   --brand-light: #3b82f6;
   --bg: #f8fafc;    /* slate-50 */
   --text: #0f172a;  /* slate-900 */
+  --surface: #ffffff;
+  --muted: #64748b;
   font-family: Inter, system-ui, sans-serif;
 }
 body { @apply bg-[color:var(--bg)] text-[color:var(--text)]; }
@@ -28,3 +30,35 @@ body { @apply bg-[color:var(--bg)] text-[color:var(--text)]; }
 .stat { @apply bg-white shadow rounded p-6 text-center; }
 .stat__num { @apply text-3xl font-bold; }
 .stat__label { @apply text-slate-600 mt-1; }
+
+/* theming */
+:root {
+  --brand: #1e40af; /* blue-800 */
+  --brand-light: #3b82f6;
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+}
+.dark {
+  --brand: #93c5fd;         /* lighter blue on dark */
+  --brand-light: #bfdbfe;
+  --bg: #0b1220;            /* near-black */
+  --surface: #0f172a;       /* slate-900 */
+  --text: #e5e7eb;          /* slate-200 */
+  --muted: #94a3b8;         /* slate-400 */
+}
+
+body { background: var(--bg); color: var(--text); }
+.card { background: var(--surface); }
+.stat { background: var(--surface); }
+.navbar { background: var(--brand); }
+.navbar__links a { color: white; }
+.navbar__links a:hover { color: var(--brand-light); }
+input, select {
+  background: var(--surface);
+  color: var(--text);
+  border-color: rgba(148,163,184,.4);
+}
+
+

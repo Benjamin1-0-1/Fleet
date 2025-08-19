@@ -10,16 +10,30 @@ export default function VehicleForm() {
   const [form, setForm] = useState(empty);
   const navigate = useNavigate();
 
-  useEffect(() => { if (editing) api.get(`/vehicles/${id}`).then((r) => setForm(r.data)); }, [id]);
+  useEffect(() => {
+    if (!id) return;
+    let alive = true;
+    (async () => {
+      const r = await api.get(`/vehicles/${id}`);
+      if (alive) setForm(r.data);
+    })();
+    return () => { alive = false; };
+  }, [id]);
 
   const update = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const submit = async (e) => {
-    e.preventDefault();
-    if (editing) await api.patch(`/vehicles/${id}`, form);
+  e.preventDefault();
+  try {
+    if (id) await api.patch(`/vehicles/${id}`, form);
     else await api.post(`/vehicles`, form);
     navigate("/vehicles");
-  };
+  } catch (err) {
+    console.error("[VehicleForm] submit failed:", err);
+    alert("Failed to save vehicle. Check the server log.");
+  }
+};
+
 
   return (
     <form onSubmit={submit} className="form">

@@ -1,12 +1,24 @@
 import axios from "axios";
 
-/**
- * Dev: CRA proxy forwards "/api" -> "http://localhost:5000"
- * Prod (or if you remove proxy): set REACT_APP_API_URL to your backend URL.
- */
-const baseURL =
-  (process.env.REACT_APP_API_URL && process.env.REACT_APP_API_URL.trim()) ||
-  "/api";
+const api = axios.create({
+  baseURL: "/api",                // CRA proxy will forward to :5000
+  timeout: 15000,
+  headers: { "Content-Type": "application/json" }
+});
 
-const api = axios.create({ baseURL });
+// helpful one-time log
+if (!window.__API_BASE_LOGGED__) {
+  console.log("[API] baseURL =", api.defaults.baseURL);
+  window.__API_BASE_LOGGED__ = true;
+}
+
+// optional: response error logging
+api.interceptors.response.use(
+  (r) => r,
+  (err) => {
+    console.error("[API ERROR]", err?.response?.status, err?.config?.url, err?.message);
+    throw err;
+  }
+);
+
 export default api;

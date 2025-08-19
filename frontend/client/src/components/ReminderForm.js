@@ -9,11 +9,20 @@ export default function ReminderForm({ onSaved }) {
   const update = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const submit = async (e) => {
-    e.preventDefault();
-    await api.post("/reminders", { ...form, vehicle_id: Number(form.vehicle_id) });
+  e.preventDefault();
+  try {
+    await api.post("/reminders", {
+      ...form,
+      vehicle_id: Number(form.vehicle_id) || undefined
+    });
     setForm({ vehicle_id: "", reminder_type: "service", due_date: "" });
     onSaved?.();
-  };
+  } catch (err) {
+    console.error("[ReminderForm] submit failed:", err);
+    alert("Failed to add reminder.");
+  }
+};
+
 
   return (
     <form className="form" onSubmit={submit}>

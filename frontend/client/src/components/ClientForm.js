@@ -10,16 +10,30 @@ export default function ClientForm() {
   const [form, setForm] = useState(empty);
   const navigate = useNavigate();
 
-  useEffect(() => { if (editing) api.get(`/clients/${id}`).then((r) => setForm(r.data)); }, [id]);
+  useEffect(() => {
+  if (!id) return;
+  let alive = true;
+  (async () => {
+    const r = await api.get(`/clients/${id}`);
+    if (alive) setForm(r.data);
+  })();
+  return () => { alive = false; };
+}, [id]);
 
   const update = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const submit = async (e) => {
-    e.preventDefault();
-    if (editing) await api.patch(`/clients/${id}`, form);
+  e.preventDefault();
+  try {
+    if (id) await api.patch(`/clients/${id}`, form);
     else await api.post(`/clients`, form);
     navigate("/clients");
-  };
+  } catch (err) {
+    console.error("[ClientForm] submit failed:", err);
+    alert("Failed to save client.");
+  }
+};
+
 
   return (
     <form onSubmit={submit} className="form">

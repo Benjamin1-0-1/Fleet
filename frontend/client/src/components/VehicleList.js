@@ -7,7 +7,19 @@ export default function VehicleList() {
   const navigate = useNavigate();
 
   const refresh = () => api.get("/vehicles").then((r) => setVehicles(r.data));
-  useEffect(refresh, []);
+
+
+  useEffect(() => {
+  (async () => {
+    try {
+      const r = await api.get("/vehicles");
+      setVehicles(r.data);
+    } catch (err) {
+      console.error("[VehicleList] load failed:", err?.message || err);
+      setVehicles([]); // fail soft
+    }
+  })();
+}, []);
 
   const remove = async (id) => {
     if (window.confirm("Delete this vehicle?")) {
