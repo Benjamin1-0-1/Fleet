@@ -2,6 +2,8 @@ from flask import Blueprint, request
 from ..extensions import db
 from ..models.client import Client
 from ..schemas.client_schema import client_schema, clients_schema
+from ..models.rental import Rental
+from datetime import date
 
 client_bp = Blueprint("clients", __name__)
 
@@ -35,3 +37,25 @@ def delete_client(client_id):
     db.session.delete(c)
     db.session.commit()
     return {"deleted": client_id}, 204
+
+@client_bp.get("/summary")
+def clients_with_status():
+    today = date.today()
+    rows = []
+    for c in Client.query.order_by(Client.id.desc()).all():
+        active = Rental.query.filter_by(client_id=c.id, returned_on=None).first()
+        if active:
+            days = (today - active.start_date).days + 1
+            status = "with vehicle"
+            vehicle_id = active.vehicle_id
+        else:
+            days = 0
+            status = "no active rental"
+            vehicle_id = None
+        rows.append({
+             **client_schema.dump(c),
+            "status": status,
+            "current_vehicle_id": vehicle_id,
+            "days_with_vehicle": days
+        })
+    return jsonify(rows)

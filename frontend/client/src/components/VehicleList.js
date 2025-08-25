@@ -37,9 +37,16 @@ export default function VehicleList() {
       <ul className="cards">
         {vehicles.map((v) => (
           <li key={v.id} className="card">
-            <div><strong>{v.plate}</strong> — {v.make} {v.model} ({v.v_class})</div>
+            <div className="flex items-center gap-3">
+              {v.image_url ? <img src={v.image_url} alt={v.plate} style={{width:80,height:48,objectFit:"cover", borderRadius:8}}/> : null}
+              <div>
+                <div><strong>{v.plate}</strong> — {v.make} {v.model} ({v.v_class})</div>
+                <div className="text-sm text-slate-500">Odometer: {v.latest_odometer ?? "-"}</div>
+              </div>
+            </div>
             <div className="card__actions">
               <button onClick={() => navigate(`${v.id}/edit`)}>Edit</button>
+              <button className="btn-outline" onClick={() => navigate(`/vehicles/${v.id}`)}>Details</button>
               <button className="danger" onClick={() => remove(v.id)}>Delete</button>
             </div>
           </li>

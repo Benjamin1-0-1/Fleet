@@ -13,6 +13,7 @@ class Vehicle(db.Model):
     purchase_price = db.Column(db.Numeric(10, 2))
     purchase_date = db.Column(db.Date, default=date.today)
     expected_resale = db.Column(db.Numeric(10, 2))
+    image_filename = db.Column(db.String(200))
 
     costs = db.relationship("VehicleCost", backref="vehicle", lazy=True, cascade="all,delete")
     statuses = db.relationship("VehicleStatusHistory", backref="vehicle", lazy=True, cascade="all,delete")

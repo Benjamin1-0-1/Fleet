@@ -1,53 +1,38 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
-import ReminderList from "../components/ReminderList";
-import ReminderForm from "../components/ReminderForm";
 
 export default function RemindersPage() {
-  const [reminders, setReminders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [saved, setSaved] = useState([]);
+  const [generated, setGenerated] = useState({ overdue: [], fuel: [] });
 
   const refresh = async () => {
-    try {
-      const r = await api.get("/reminders");
-      setReminders(r.data);
-      setError(null);
-    } catch (err) {
-      setError(err.message || "Failed to fetch reminders");
-      console.error("[RemindersPage] load failed:", err);
-    } finally {
-      setLoading(false);
-    }
+    const r = await api.get("/reminders/all");
+    setSaved(r.data.saved); setGenerated(r.data.generated);
   };
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const r = await api.get("/reminders");
-        if (alive) {
-          setReminders(r.data);
-          setError(null);
-        }
-      } catch (err) {
-        if (alive) setError(err.message || "Failed to fetch reminders");
-        console.error("[RemindersPage] initial load failed:", err);
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => { alive = false; };
-  }, []);
+  useEffect(() => { refresh(); }, []);
 
-  if (loading) return <section className="page"><p>Loading reminders...</p></section>;
-  if (error) return <section className="page"><p className="error">{error}</p></section>;
+  const section = (title, items) => (
+    <div className="card">
+      <h3 className="font-semibold mb-2">{title}</h3>
+      <table className="table">
+        <thead><tr><th>Vehicle</th><th>Type</th><th>Due</th></tr></thead>
+        <tbody>
+          {items.map((x,i) => (<tr key={x.id || i}><td>{x.vehicle_id}</td><td>{x.reminder_type}</td><td>{x.due_date}</td></tr>))}
+          {items.length===0 && <tr><td colSpan="3">None</td></tr>}
+        </tbody>
+      </table>
+    </div>
+  );
 
   return (
     <section className="page">
       <header className="page__header"><h2>Reminders</h2></header>
-      <ReminderForm onSaved={refresh} />
-      <ReminderList items={reminders} onChanged={refresh} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {section("Saved", saved)}
+        {section("Overdue Rentals (auto)", generated.overdue)}
+        {section("Fuel Needed (auto)", generated.fuel)}
+      </div>
     </section>
   );
 }

@@ -2,63 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Business theme */
+/* theme variables + Poppins */
 :root {
   --brand: #1e40af;
-  --brand-light: #3b82f6;
-  --bg: #f8fafc;    /* slate-50 */
-  --text: #0f172a;  /* slate-900 */
-  --surface: #ffffff;
-  --muted: #64748b;
-  font-family: Inter, system-ui, sans-serif;
-}
-body { @apply bg-[color:var(--bg)] text-[color:var(--text)]; }
-.btn { @apply bg-[color:var(--brand)] text-white px-4 py-2 rounded hover:bg-[color:var(--brand-light)] transition; }
-.danger { @apply bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded; }
-.page { @apply max-w-6xl mx-auto p-6; }
-.page__header { @apply flex items-center justify-between mb-6; }
-.cards { @apply grid gap-4 md:grid-cols-2; }
-.card { @apply bg-white shadow rounded p-4 flex items-center justify-between; }
-.card .sub { @apply text-sm text-slate-500; }
-.form { @apply bg-white shadow rounded p-6 max-w-xl; }
-.form__field { @apply flex flex-col mb-4; }
-.form__field input, .form__field select { @apply border border-slate-300 rounded px-3 py-2 mt-1; }
-.form__actions { @apply flex gap-3 justify-end; }
-.navbar { @apply bg-[color:var(--brand)] text-white flex items-center justify-between px-6 py-3 shadow; }
-.navbar__links a { @apply ml-6 hover:text-[color:var(--brand-light)] transition; }
-.stats { @apply grid grid-cols-1 sm:grid-cols-2 gap-4; }
-.stat { @apply bg-white shadow rounded p-6 text-center; }
-.stat__num { @apply text-3xl font-bold; }
-.stat__label { @apply text-slate-600 mt-1; }
-
-/* theming */
-:root {
-  --brand: #1e40af; /* blue-800 */
   --brand-light: #3b82f6;
   --bg: #f8fafc;
   --surface: #ffffff;
   --text: #0f172a;
   --muted: #64748b;
+  font-family: Poppins, system-ui, sans-serif;
 }
 .dark {
-  --brand: #93c5fd;         /* lighter blue on dark */
+  --brand: #93c5fd;
   --brand-light: #bfdbfe;
-  --bg: #0b1220;            /* near-black */
-  --surface: #0f172a;       /* slate-900 */
-  --text: #e5e7eb;          /* slate-200 */
-  --muted: #94a3b8;         /* slate-400 */
+  --bg: #0b1220;
+  --surface: #0f172a;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
 }
-
 body { background: var(--bg); color: var(--text); }
-.card { background: var(--surface); }
-.stat { background: var(--surface); }
-.navbar { background: var(--brand); }
-.navbar__links a { color: white; }
+.btn { @apply px-4 py-2 rounded transition; background: var(--brand); color:white; }
+.btn-outline { @apply px-3 py-1 rounded border; border-color: var(--brand); color: var(--brand); }
+.danger { @apply bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded; }
+.page { @apply max-w-7xl mx-auto p-6; }
+.page__header { @apply flex items-center justify-between mb-6; }
+.cards { @apply grid gap-4 md:grid-cols-2 lg:grid-cols-3; }
+.card { background: var(--surface); @apply shadow rounded p-4; }
+.navbar { background: var(--brand); @apply text-white flex items-center justify-between px-6 py-3 shadow; }
+.navbar__links a { @apply ml-6; color:white }
 .navbar__links a:hover { color: var(--brand-light); }
-input, select {
-  background: var(--surface);
-  color: var(--text);
-  border-color: rgba(148,163,184,.4);
-}
-
-
+input, select { background: var(--surface); color: var(--text); @apply border rounded px-3 py-2; border-color: #cbd5e1; }
+.table { @apply w-full border-collapse; }
+.table th, .table td { @apply p-3 border-b; border-color: #e2e8f0; }
