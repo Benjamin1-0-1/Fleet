@@ -21,6 +21,7 @@ with app.app_context():
     # demo user
     admin = User(username="admin")
     admin.set_password("admin123")
+    db.session.add(admin)
 
     v1 = Vehicle(plate="KAB-123A", make="Toyota", model="Corolla", colour="White",
                  v_class="sedan", purchase_price=8000, image_filename="car1.jpg")
@@ -59,6 +60,8 @@ with app.app_context():
         ClientRating(client_id=c1.id, stars=5, feedback="Prompt payer"),
         ClientRating(client_id=c2.id, stars=3, feedback="Late return once"),
         Reminder(vehicle_id=v1.id, reminder_type="service", due_date=date.today()+timedelta(days=14)),
+        Reminder(vehicle_id=v1.id, reminder_type="service", due_date=date.today()+timedelta(days=7)),
+        Reminder(vehicle_id=v2.id, reminder_type="inspection", due_date=date.today()+timedelta(days=30)),
         Damage(vehicle_id=v2.id, description="Scratched rear bumper", cost=120)
     ])
 

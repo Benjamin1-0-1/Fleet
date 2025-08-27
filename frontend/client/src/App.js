@@ -5,6 +5,8 @@ import VehicleDetail from "./pages/VehicleDetail";
 import ClientsPage from "./pages/ClientsPage";
 import RemindersPage from "./pages/RemindersPage";
 import Login from "./pages/Login";
+import VehicleForm from "./components/VehicleForm";
+import ClientForm from "./components/ClientForm";
 import ThemeToggle from "./components/ThemeToggle";
 import LogoutButton from "./components/LogoutButton";
 import "./index.css";
@@ -27,11 +29,22 @@ export default function App() {
 
       <Routes>
         <Route path="/" element={<Dashboard />} />
+
+        {/* Vehicles */}
         <Route path="/vehicles/*" element={<VehiclesPage />} />
-        <Route path="/vehicles/:id" element={<VehicleDetail />} />
-        <Route path="/clients/*" element={<ClientsPage />} />
-        <Route path="/reminders/*" element={<RemindersPage />} />
+        <Route path="/vehicles/*new" element={<VehicleForm />} />
+        <Route path="/vehicles/*:id" element={<VehicleDetail />} />
+        <Route path="/vehicles/*:id/edit" element={<VehicleForm />} />
+
+        {/* Clients */}
+        <Route path="/clients" element={<ClientsPage />} />
+        <Route path="/clients/new" element={<ClientForm />} />
+        <Route path="/clients/:id/edit" element={<ClientForm />} />
+
+        {/* Reminders & Auth */}
+        <Route path="/reminders" element={<RemindersPage />} />
         <Route path="/login" element={<Login />} />
+
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>

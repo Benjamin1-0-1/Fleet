@@ -2,57 +2,84 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../api/api";
 
-const empty = { plate: "", make: "", model: "", v_class: "" };
+const EMPTY = { plate:"", make:"", model:"", v_class:"", colour:"", purchase_price:"" };
 
 export default function VehicleForm() {
   const { id } = useParams();
-  const editing = Boolean(id);
-  const [form, setForm] = useState(empty);
-  const navigate = useNavigate();
+  const editing = !!id && id !== "new"; // ✅ never treat “new” as an id
+  const [form, setForm] = useState(EMPTY);
+  const [busy, setBusy] = useState(false);
+  const nav = useNavigate();
 
   useEffect(() => {
-    if (!id) return;
+    if (!editing) return;
     let alive = true;
     (async () => {
       const r = await api.get(`/vehicles/${id}`);
-      if (alive) setForm(r.data);
+      if (alive) setForm({
+        plate: r.data.plate || "",
+        make: r.data.make || "",
+        model: r.data.model || "",
+        v_class: r.data.v_class || "",
+        colour: r.data.colour || "",
+        purchase_price: r.data.purchase_price || ""
+      });
     })();
     return () => { alive = false; };
-  }, [id]);
-
-  const update = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  }, [editing, id]);
 
   const submit = async (e) => {
-  e.preventDefault();
-  try {
-    if (id) await api.patch(`/vehicles/${id}`, form);
-    else await api.post(`/vehicles`, form);
-    navigate("/vehicles");
-  } catch (err) {
-    console.error("[VehicleForm] submit failed:", err);
-    alert("Failed to save vehicle. Check the server log.");
-  }
-};
-
+    e.preventDefault();
+    setBusy(true);
+    try {
+      if (editing) await api.patch(`/vehicles/${id}`, form);
+      else await api.post(`/vehicles`, form);
+      nav("/vehicles");
+    } catch (e) {
+      alert("Failed to save vehicle. Check backend logs.");
+      console.error(e);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
-    <form onSubmit={submit} className="form">
-      <h2>{editing ? "Edit Vehicle" : "Add Vehicle"}</h2>
-      {[
-        ["plate","Plate"],
-        ["make","Make"],
-        ["model","Model"],
-        ["v_class","Class"]
-      ].map(([name,label]) => (
-        <label key={name} className="form__field">
-          <span>{label}</span>
-          <input name={name} value={form[name] || ""} onChange={update} required />
+    <section className="page">
+      <header className="page__header">
+        <h2>{editing ? "Edit Vehicle" : "Add Vehicle"}</h2>
+      </header>
+      <form onSubmit={submit} className="card grid gap-4 md:grid-cols-2">
+        <label className="flex flex-col">
+          <span>Plate</span>
+          <input value={form.plate} onChange={(e)=>setForm({...form, plate:e.target.value})} required />
         </label>
-      ))}
-      <div className="form__actions">
-        <button type="submit" className="btn">Save</button>
-        <button type="button" onClick={() => navigate("/vehicles")}>Cancel</button>
-      </div>
-    </form>
+        <label className="flex flex-col">
+          <span>Make</span>
+          <input value={form.make} onChange={(e)=>setForm({...form, make:e.target.value})} required />
+        </label>
+        <label className="flex flex-col">
+          <span>Model</span>
+          <input value={form.model} onChange={(e)=>setForm({...form, model:e.target.value})} required />
+        </label>
+        <label className="flex flex-col">
+          <span>Class</span>
+          <input value={form.v_class} onChange={(e)=>setForm({...form, v_class:e.target.value})} />
+        </label>
+        <label className="flex flex-col">
+          <span>Colour</span>
+          <input value={form.colour} onChange={(e)=>setForm({...form, colour:e.target.value})} />
+        </label>
+        <label className="flex flex-col">
+          <span>Purchase Price</span>
+          <input type="number" step="0.01" value={form.purchase_price}
+                 onChange={(e)=>setForm({...form, purchase_price:e.target.value})} />
+        </label>
+
+        <div className="md:col-span-2 flex gap-3">
+          <button className="btn" disabled={busy} type="submit">{busy ? "Saving..." : "Save"}</button>
+          <button className="btn-outline" type="button" onClick={()=>nav("/vehicles")}>Cancel</button>
+        </div>
+      </form>
+    </section>
   );
 }

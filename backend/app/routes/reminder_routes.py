@@ -1,59 +1,135 @@
-from flask import Blueprint, request
+from datetime import date, datetime
+from flask import Blueprint, jsonify, request
 from ..extensions import db
 from ..models.reminder import Reminder
-from ..schemas.reminder_schema import reminder_schema, reminders_schema
-from datetime import date, timedelta
 from ..models.rental import Rental
-from ..models.vehicle_cost import VehicleCost
-from sqlalchemy import and_
+from ..models.vehicle import Vehicle
 
 reminder_bp = Blueprint("reminders", __name__)
 
+
+def _parse_due(val):
+    """Accept date or ISO string; return date or None."""
+    if not val:
+        return None
+    if isinstance(val, date):
+        return val
+    try:
+        # try full ISO datetime first, then date
+        return datetime.fromisoformat(val).date()
+    except Exception:
+        try:
+            return datetime.strptime(val, "%Y-%m-%d").date()
+        except Exception:
+            return None
+
+
 @reminder_bp.post("/")
 def create_reminder():
-    r = reminder_schema.load(request.get_json())
+    data = request.get_json() or {}
+    r = Reminder(
+        vehicle_id=data.get("vehicle_id"),
+        reminder_type=data.get("reminder_type", "general"),
+        due_date=_parse_due(data.get("due_date")),
+        notes=data.get("notes"),
+    )
     db.session.add(r)
     db.session.commit()
-    return reminder_schema.jsonify(r), 201
+    return jsonify({"id": r.id}), 201
+
 
 @reminder_bp.get("/")
 def list_reminders():
-    return reminders_schema.jsonify(Reminder.query.order_by(Reminder.due_date.asc()).all()), 200
+    items = Reminder.query.order_by(Reminder.due_date.asc().nulls_last()).all()
+    out = [{
+        "id": r.id,
+        "vehicle_id": r.vehicle_id,
+        "reminder_type": r.reminder_type,
+        "due_date": r.due_date.isoformat() if r.due_date else None,
+        "notes": getattr(r, "notes", None),
+    } for r in items]
+    return jsonify(out), 200
+
 
 @reminder_bp.patch("/<int:reminder_id>")
 def update_reminder(reminder_id):
     r = Reminder.query.get_or_404(reminder_id)
-    for k, v in request.get_json().items():
-        setattr(r, k, v)
+    data = request.get_json() or {}
+    if "vehicle_id" in data:
+        r.vehicle_id = data["vehicle_id"]
+    if "reminder_type" in data:
+        r.reminder_type = data["reminder_type"]
+    if "due_date" in data:
+        r.due_date = _parse_due(data["due_date"])
+    if "notes" in data:
+        r.notes = data["notes"]
     db.session.commit()
-    return reminder_schema.jsonify(r), 200
+    return jsonify({
+        "id": r.id,
+        "vehicle_id": r.vehicle_id,
+        "reminder_type": r.reminder_type,
+        "due_date": r.due_date.isoformat() if r.due_date else None,
+        "notes": getattr(r, "notes", None),
+    }), 200
+
 
 @reminder_bp.delete("/<int:reminder_id>")
 def delete_reminder(reminder_id):
     r = Reminder.query.get_or_404(reminder_id)
     db.session.delete(r)
     db.session.commit()
-    return {"deleted": reminder_id}, 204
+    # use 200 with a body (204 should not return a body)
+    return jsonify({"deleted": reminder_id}), 200
+
 
 @reminder_bp.get("/all")
-def all_reminders():
-    saved = reminders_schema.dump(Reminder.query.order_by(Reminder.due_date.asc()).all())
-    # overdue rentals (not returned and end_date in past)
-    today = date.today()
-    overdue = []
-    for r in Rental.query.filter(Rental.end_date.isnot(None), Rental.returned_on.is_(None), Rental.end_date < today).all():
-        overdue.append({
-            "id": f"overdue-{r.id}",
-            "vehicle_id": r.vehicle_id,
-            "reminder_type": "overdue",
-            "due_date": r.end_date.isoformat(),
-            "sent": False
-        })
-        fuel_need = []
-        cutoff = today - timedelta(days=14)
-        vehicle_ids = {v.id for v in Vehicle.query.all()}
-        fueled_ids = {vc.vehicle_id for vc in VehicleCost.query.filter(and_(VehicleCost.cost_type=="fuel", VehicleCost.cost_date >= cutoff)).all()}
-        for vid in (vehicle_ids - fueled_ids):
-            fuel_need.append({"id": f"fuel-{vid}", "vehicle_id": vid, "reminder_type": "fuel", "due_date": today.isoformat(), "sent": False})
+def reminders_all():
+    """Combined feed: saved reminders + generated (overdue rentals, low fuel)."""
+    # saved reminders
+    saved = Reminder.query.order_by(Reminder.due_date.asc().nulls_last()).all()
+    saved_out = [{
+        "id": r.id,
+        "vehicle_id": r.vehicle_id,
+        "reminder_type": r.reminder_type,
+        "due_date": r.due_date.isoformat() if r.due_date else None,
+        "notes": getattr(r, "notes", None),
+    } for r in saved]
 
-            return jsonify({"saved": saved, "generated": {"overdue": overdue, "fuel": fuel_need}}), 200
+    # generated: overdue rentals
+    overdue_out = []
+    today = date.today()
+    active = Rental.query.filter(Rental.returned_on.is_(None)).all()
+    for rr in active:
+        due_on = getattr(rr, "due_on", None)
+        if due_on and isinstance(due_on, date) and due_on < today:
+            overdue_out.append({
+                "vehicle_id": rr.vehicle_id,
+                "reminder_type": "overdue_rental",
+                "due_date": due_on.isoformat(),
+                "client_id": rr.client_id,
+            })
+
+    # generated: low fuel (if model has fuel_level)
+    fuel_out = []
+    for v in Vehicle.query.all():
+        fuel = getattr(v, "fuel_level", None)
+        try:
+            if fuel is not None and float(fuel) <= 15:
+                fuel_out.append({
+                    "vehicle_id": v.id,
+                    "reminder_type": "fuel_low",
+                    "level": float(fuel),
+                    "due_date": None,
+                })
+        except Exception:
+            pass
+
+    # return in the shape the frontend expects,
+    # but also include the flat keys for compatibility.
+    payload = {
+        "saved": saved_out,
+        "generated": {"overdue": overdue_out, "fuel": fuel_out},
+        "overdue_rentals": overdue_out,
+        "fuel_needed": fuel_out,
+    }
+    return jsonify(payload), 200

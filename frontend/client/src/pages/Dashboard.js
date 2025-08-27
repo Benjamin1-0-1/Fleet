@@ -1,67 +1,70 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import api from "../api/api";
-import { Bar, Line } from "react-chartjs-2";
-import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from "chart.js";
-ChartJS.register(BarElement, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 export default function Dashboard() {
-  const [summary, setSummary] = useState({ vehicles: 0, total_costs: 0, revenue_week: 0, revenue_month: 0, revenue_year: 0 });
-  const [vehicles, setVehicles] = useState([]);
+  const [stats, setStats] = useState({
+    vehicles: 0,
+    total_costs: 0,
+    revenue_year: 0,
+    revenue_month: 0,
+    revenue_week: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null); // ✅ define setError
 
   useEffect(() => {
+    let alive = true;
     (async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const s = await api.get("/analytics/summary"); setSummary(s.data);
-        const v = await api.get("/vehicles"); setVehicles(v.data);
-      } catch (e) { console.error(e); }
+        const r = await api.get("/analytics/summary"); // -> http://localhost:5000/api/analytics/summary
+        if (!alive) return;
+        setStats({
+          vehicles: r.data.vehicles ?? 0,
+          total_costs: r.data.total_costs ?? 0,
+          revenue_year: r.data.revenue_year ?? 0,
+          revenue_month: r.data.revenue_month ?? 0,
+          revenue_week: r.data.revenue_week ?? 0,
+        });
+      } catch (e) {
+        console.error("[Dashboard] load failed:", e);
+        if (alive) setError("Failed to load dashboard.");
+      } finally {
+        if (alive) setLoading(false);
+      }
     })();
+    return () => { alive = false; };
   }, []);
-
-  const revenueData = {
-    labels: ["This Week", "This Month", "This Year"],
-    datasets: [{ label: "Revenue", data: [summary.revenue_week, summary.revenue_month, summary.revenue_year] }]
-  };
-
-  const vehicleTable = (
-    <table className="table">
-      <thead><tr><th>Image</th><th>Plate</th><th>Make/Model</th><th>Class</th><th>Odometer</th><th>Status</th></tr></thead>
-      <tbody>
-        {vehicles.map(v => (
-          <tr key={v.id}>
-            <td>{v.image_url ? <img src={v.image_url} alt={v.plate} style={{width:64,height:40,objectFit:"cover"}}/> : "—"}</td>
-            <td><Link to={`/vehicles/${v.id}`}>{v.plate}</Link></td>
-            <td>{v.make} {v.model}</td>
-            <td>{v.v_class || "-"}</td>
-            <td>{v.latest_odometer ?? "-"}</td>
-            <td>{v.active_client_id ? "On Rent" : "Available"}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
 
   return (
     <section className="page">
-      <header className="page__header"><h2>Dashboard</h2></header>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="stat card text-center"><div className="text-3xl font-bold">{summary.vehicles}</div><div>Vehicles</div></div>
-        <div className="stat card text-center"><div className="text-3xl font-bold">${Number(summary.total_costs).toFixed(2)}</div><div>Total Costs</div></div>
-        <div className="stat card text-center"><div className="text-3xl font-bold">${Number(summary.revenue_month).toFixed(2)}</div><div>Revenue (Month)</div></div>
-        <div className="stat card text-center"><div className="text-3xl font-bold">${Number(summary.revenue_week).toFixed(2)}</div><div>Revenue (Week)</div></div>
-      </div>
+      <header className="page__header">
+        <h2>Dashboard</h2>
+      </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div className="card"><h3 className="font-semibold mb-4">Revenue Overview</h3><Bar data={revenueData} /></div>
-        <div className="card"><h3 className="font-semibold mb-4">Maintenance Trend</h3>
-          <Line data={{ labels: ["Jan","Feb","Mar","Apr","May","Jun"], datasets:[{ label:"Costs", data:[200,320,150,480,260,390]}] }} />
+      {error && <p className="text-red-600 mb-3">{error}</p>}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="card">
+          <div className="text-4xl font-bold">{stats.vehicles}</div>
+          <div className="text-gray-600">Vehicles</div>
+        </div>
+        <div className="card">
+          <div className="text-4xl font-bold">${stats.total_costs.toFixed(2)}</div>
+          <div className="text-gray-600">Total Costs</div>
+        </div>
+        <div className="card">
+          <div className="text-4xl font-bold">${stats.revenue_month.toFixed(2)}</div>
+          <div className="text-gray-600">Revenue (Month)</div>
+        </div>
+        <div className="card">
+          <div className="text-4xl font-bold">${stats.revenue_week.toFixed(2)}</div>
+          <div className="text-gray-600">Revenue (Week)</div>
         </div>
       </div>
 
-      <div className="card">
-        <h3 className="font-semibold mb-4">Fleet Snapshot</h3>
-        {vehicleTable}
-      </div>
+      {loading && <p className="mt-4">Loading…</p>}
     </section>
   );
 }
